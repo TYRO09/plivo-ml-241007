@@ -380,7 +380,7 @@ like the <code>label</code> column. <code>predict.py</code> computes neither.</l
 against the repo and the commit history.</p>
 <table>
 <tr><th style="width:50%"><span class="tag t-h">human</span> candidate</th>
-    <th><span class="tag t-a">agent</span> Claude Opus 5 (Claude Code)</th></tr>
+    <th><span class="tag t-a">agent</span> AI coding agent</th></tr>
 <tr><td>
 <ul style="margin:0;padding-left:18px">
 <li><b>Scoping and constraints.</b> Chose the end-of-turn track; set and
