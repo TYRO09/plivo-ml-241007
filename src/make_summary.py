@@ -222,9 +222,12 @@ first change that moved Hindi at all.</p>
     <td>AUC {full_en['auc']:.3f} / {full_hi['auc']:.3f}; operating points
     thr={full_en['threshold']:.2f}, d={full_en['delay']*1000:.0f} ms and
     thr={full_hi['threshold']:.2f}, d={full_hi['delay']*1000:.0f} ms</td></tr>
-<tr><td>cross-language transfer</td><td class="num">1232 ms</td>
-    <td class="num">858 ms</td><td>train on the <em>other</em> language only —
-    the model is not merely fitting one language's prosody</td></tr>
+<tr><td>trained on the <em>other</em> language only</td>
+    <td class="num">1313 ms</td><td class="num">850 ms</td>
+    <td>AUC 0.666 / 0.668. Single-language training transfers weakly — Hindi
+    lands exactly on its baseline. <b>Pooling both languages is what produces
+    the result above</b>, and it is why the shipped model is trained on both
+    despite the hidden set being mostly Hindi.</td></tr>
 <tr><td>VAP zero-shot alone (no EOT labels)</td><td class="num">1412 ms</td>
     <td class="num">850 ms</td><td>§7 — implemented, honestly did not win</td></tr>
 <tr><td>causal transformer over 2 s frame matrices<br><span style="font-size:12.5px;color:#4a5568">(same idea, sequence model instead of designed features)</span></td>
