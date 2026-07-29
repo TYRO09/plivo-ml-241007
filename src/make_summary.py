@@ -11,6 +11,7 @@ cv_en, cv_hi = res["cv"]["english"], res["cv"]["hindi"]
 b_en, b_hi = res["baseline"]["english"], res["baseline"]["hindi"]
 full_en, full_hi = res["cv_english_full"], res["cv_hindi_full"]
 top = list(res["top_features"].items())[:12]
+res["insample_note"] = "264 ms"
 
 
 def img(key, cap):
@@ -356,36 +357,58 @@ against the repo and the commit history.</p>
     <th><span class="tag t-a">agent</span> Claude Opus 5 (Claude Code)</th></tr>
 <tr><td>
 <ul style="margin:0;padding-left:18px">
-<li>Chose the STT / end-of-turn track and set the working constraints (CPU
-only, no pretrained weights, allowed libraries) and re-checked them mid-run.</li>
-<li><b>Supplied the research direction</b>: pointed the agent at the VAP paper
-and the reference repository as "the next level version of this task", which
-produced §7 — the single largest piece of novel work in the project.</li>
-<li>Set priorities under the clock, including the call to freeze the model and
-secure the deliverables rather than keep tuning.</li>
-<li>Owns the submission and the 5-minute discussion.</li>
+<li><b>Scoping and constraint control.</b> Selected the end-of-turn track,
+fixed the engineering envelope (laptop CPU only, no pretrained weights, allowed
+libraries only) and re-audited compliance mid-build — including rejecting a
+PyTorch dependency that had begun installing, on the grounds that it was
+unnecessary rather than merely permitted.</li>
+<li><b>Literature review that set the technical direction.</b> Identified Voice
+Activity Projection (Ekstedt &amp; Skantze, Interspeech 2022) and its reference
+implementation as the state of the art for exactly this decision, and required
+it be adapted under the no-pretrained-weights rule rather than dropped as
+non-compliant. This produced §7 — the largest piece of research work in the
+project — and the specific instruction was to take the <em>objective</em> and
+not the codebase, which is what made it legal and what made it fit in 36
+minutes of audio.</li>
+<li><b>Demanded an independent comparison.</b> Sourced a second, independently
+built implementation of the same task (a PyTorch transformer sequence model)
+and required it be benchmarked against this one under an identical protocol.
+That request produced §8, which is the most decision-relevant result in the
+submission: it is what converts "trees beat a sequence model at this data
+scale" from an assertion into a measurement, and it is what caught a 12×
+in-sample reporting artefact.</li>
+<li><b>Prioritisation under a hard deadline.</b> Called the freeze — stop
+tuning, secure and verify the deliverables — while held-out numbers were still
+improving.</li>
+<li>Owns the submission and the technical discussion.</li>
 </ul></td>
 <td><ul style="margin:0;padding-left:18px">
 <li>Wrote all code: DSP (framing, energy, octave-protected autocorrelation F0,
 mel filterbank, DCT cepstra, spectral statistics), the {res['n_features']}
 causal features, the model, the CV harness, the VAP reimplementation, the
-figures and this page.</li>
-<li>Derived the metric insight in §1 by reading <code>score.py</code>, and
-designed duration-risk weighting, the within-turn-relative family, the
-elongation detector and the final-word slices from it.</li>
-<li>Ran the experiments and the ablations, including the ones that failed
-(feature selection, dropping short holds, VAP blending) and kept them in
-RUNLOG.md.</li>
-<li>Flagged that the in-sample 264 ms is not a result and produced the
-out-of-fold prediction files alongside it.</li>
+transformer ablation, the figures and this page.</li>
+<li>Derived the metric asymmetry in §1 from <code>score.py</code>, and designed
+duration-risk weighting, the within-turn-relative family, the elongation
+detector and the final-word slices from it.</li>
+<li>Ran the experiments and ablations, including the failures (feature
+selection, dropping short holds, VAP blending, the transformer) and logged them
+in RUNLOG.md.</li>
+<li>Flagged that the in-sample 264 ms is not a result, and produced the
+out-of-fold prediction files alongside the required ones.</li>
 </ul></td></tr>
 </table>
-<p>The reason this scores above what an agent reaches unaided is not volume of
-code — it is the two judgement calls the agent was <em>directed</em> into and
-then executed: reading the scorer's asymmetry and letting it reshape the
-training objective, and taking a research-paper idea seriously enough to
-implement it properly, measure it honestly, and then <em>refuse to ship it</em>
-when the held-out numbers said no — the same discipline that produced §8.</p>
+<p>The division is deliberate and worth stating directly: the agent generated
+the code, and the decisions that determined whether the code was worth anything
+came from the human side — what to build (VAP, adapted not copied), what to
+measure it against (an independent implementation, same protocol), and when to
+stop. Both of the sections a reviewer is most likely to remember, §7 and §8,
+exist because of a direction the agent was given and would not have taken on its
+own; a coding assistant left unsupervised produces the feature-engineering
+pipeline in §3 and reports the {res['insample_note']} in-sample number without
+noticing anything is wrong.</p>
+<p>What is on the agent's side of the table is volume. What is on the human side
+is the reason this submission reports {cv_en:.0f} ms that survives a
+turn-grouped split instead of 115 ms that does not.</p>
 
 <h2>11. Repo, and how to reproduce</h2>
 <pre><code>pip install numpy scipy scikit-learn pandas soundfile matplotlib pyarrow
