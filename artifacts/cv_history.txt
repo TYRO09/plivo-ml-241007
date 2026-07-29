@@ -1,0 +1,18 @@
+[v1 baseline features]
+  CV pooled  english : delay=  1224ms  cut= 5.0%  AUC=0.658  (thr=0.60 d=800ms recall=0.47)
+  CV pooled  hindi   : delay=   850ms  cut= 5.0%  AUC=0.734  (thr=0.05 d=850ms recall=1.00)
+  CV pooled  ALL     : delay=  1144ms  cut= 5.0%  AUC=0.701  (thr=0.70 d=500ms recall=0.41)
+  XLANG en->hi      : delay=   850ms  cut= 4.0%  AUC=0.689  (thr=0.05 d=850ms recall=1.00)
+  XLANG hi->en      : delay=  1232ms  cut= 5.0%  AUC=0.662  (thr=0.75 d=450ms recall=0.32)
+[v2 duration-risk weighted training]
+  CV pooled  english : delay=  1216ms  cut= 5.0%  AUC=0.655  (thr=0.60 d=800ms recall=0.48)
+  CV pooled  hindi   : delay=   819ms  cut= 5.0%  AUC=0.738  (thr=0.55 d=500ms recall=0.71)
+  CV pooled  ALL     : delay=  1100ms  cut= 5.0%  AUC=0.701  (thr=0.55 d=800ms recall=0.62)
+  XLANG en->hi      : delay=   858ms  cut= 4.0%  AUC=0.689  (thr=0.05 d=850ms recall=0.99)
+  XLANG hi->en      : delay=  1268ms  cut= 5.0%  AUC=0.659  (thr=0.70 d=650ms recall=0.35)
+[v3 +hesitation/elongation, CMN mfcc, declination residual]
+  CV pooled  english : delay=  1117ms  cut= 5.0%  AUC=0.684  (thr=0.45 d=900ms recall=0.69)
+  CV pooled  hindi   : delay=   850ms  cut= 5.0%  AUC=0.718  (thr=0.05 d=850ms recall=1.00)
+  CV pooled  ALL     : delay=  1049ms  cut= 4.5%  AUC=0.706  (thr=0.45 d=850ms recall=0.73)
+  XLANG en->hi      : delay=   850ms  cut= 5.0%  AUC=0.654  (thr=0.05 d=850ms recall=1.00)
+  XLANG hi->en      : delay=  1347ms  cut= 5.0%  AUC=0.644  (thr=0.80 d=500ms recall=0.23)

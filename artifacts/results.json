@@ -1,0 +1,46 @@
+{
+  "cv": {
+    "english": 1142.5,
+    "hindi": 835.0
+  },
+  "baseline": {
+    "english": 1600.0,
+    "hindi": 850.0
+  },
+  "insample": {},
+  "n_features": 256,
+  "cv_english_full": {
+    "latency": 1.1425,
+    "cutoff": 0.05,
+    "threshold": 0.5,
+    "delay": 0.85,
+    "eot_recall": 0.61,
+    "auc": 0.6968918918918919
+  },
+  "cv_hindi_full": {
+    "latency": 0.835,
+    "cutoff": 0.05,
+    "threshold": 0.45,
+    "delay": 0.7,
+    "eot_recall": 0.85,
+    "auc": 0.7648648648648648
+  },
+  "top_features": {
+    "q3_e": 0.0423,
+    "q1_c7": 0.0229,
+    "p_fall_frac": 0.0209,
+    "q3_vf": 0.0123,
+    "ac_e_ref": 0.0111,
+    "q1_e": 0.0094,
+    "p_slope_400": 0.0087,
+    "p_range": 0.0086,
+    "rel_s_centroid_rel_dmax": 0.008,
+    "s_flatness_slope": 0.0078,
+    "q4_c7": 0.0072,
+    "ctx_pause_rate": 0.0069,
+    "q5_c1": 0.0068,
+    "q1_c5": 0.0066,
+    "en_std_500": 0.0066,
+    "q5_c8": 0.0065
+  }
+}

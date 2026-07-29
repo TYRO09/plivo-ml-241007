@@ -1,0 +1,13 @@
+{
+  "config": {
+    "hold_min_dur": "0.0",
+    "n_seeds": "5",
+    "w_linear": "0.35",
+    "weight_kw": "{'pivot': 0.42, 'sharp': 0.13, 'floor': 0.3, 'gain': 2.6}"
+  },
+  "n_features": 256,
+  "langs": [
+    "english",
+    "hindi"
+  ]
+}
