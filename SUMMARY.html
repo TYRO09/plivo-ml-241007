@@ -278,7 +278,7 @@ NOTES.md as the top next step: semi-supervised training on those ~1,600
 unannotated silences using the full pause-level feature set instead of the
 thinner frame-level one.</p>
 
-<h2>8. The result I would lead the discussion with</h2>
+<h2>8. Sequence model instead of features — an ablation worth reading</h2>
 <p>I also built the obvious "more modern" alternative: skip hand-designed
 features, feed the last 2 s straight in as a 197×17 frame matrix (energy, F0,
 voice activity, ZCR, 12 MFCCs) and let a small causal transformer (d_model 32,
@@ -297,11 +297,10 @@ the reported score, and English falls to near chance (0.543).</b> The 115 ms is
 not end-of-turn detection; it is a 20k-parameter model recalling 496 training
 sequences. Anything that reads "115 ms at AUC 0.996" on 100 turns of real
 conversational audio is measuring its own training set.</div>
-<p>That is why the shipped model is gradient-boosted trees over designed
-features and not a sequence model: with 496 labelled pauses, the feature design
-<em>is</em> the regularisation. It is also why the honest numbers in §5 are the
-ones I would defend, and why I would rather submit 1142 ms that survives
-a turn-grouped split than 115 ms that does not.</p>
+<p>Hence trees over designed features rather than a sequence model: with 496
+labelled pauses, the feature design <em>is</em> the regularisation. It is also
+why 1142 ms that survives a turn-grouped split is the number worth
+reporting.</p>
 
 <h2>9. Causality — how to audit it in one minute</h2>
 <p>The rule is that a pause's features may use only audio in
@@ -336,58 +335,33 @@ against the repo and the commit history.</p>
     <th><span class="tag t-a">agent</span> Claude Opus 5 (Claude Code)</th></tr>
 <tr><td>
 <ul style="margin:0;padding-left:18px">
-<li><b>Scoping and constraint control.</b> Selected the end-of-turn track,
-fixed the engineering envelope (laptop CPU only, no pretrained weights, allowed
-libraries only) and re-audited compliance mid-build — including rejecting a
-PyTorch dependency that had begun installing, on the grounds that it was
-unnecessary rather than merely permitted.</li>
-<li><b>Literature review that set the technical direction.</b> Identified Voice
-Activity Projection (Ekstedt &amp; Skantze, Interspeech 2022) and its reference
-implementation as the state of the art for exactly this decision, and required
-it be adapted under the no-pretrained-weights rule rather than dropped as
-non-compliant. This produced §7 — the largest piece of research work in the
-project — and the specific instruction was to take the <em>objective</em> and
-not the codebase, which is what made it legal and what made it fit in 36
-minutes of audio.</li>
-<li><b>Demanded an independent comparison.</b> Sourced a second, independently
-built implementation of the same task (a PyTorch transformer sequence model)
-and required it be benchmarked against this one under an identical protocol.
-That request produced §8, which is the most decision-relevant result in the
-submission: it is what converts "trees beat a sequence model at this data
-scale" from an assertion into a measurement, and it is what caught a 12×
-in-sample reporting artefact.</li>
-<li><b>Prioritisation under a hard deadline.</b> Called the freeze — stop
-tuning, secure and verify the deliverables — while held-out numbers were still
-improving.</li>
-<li>Owns the submission and the technical discussion.</li>
+<li><b>Scoping and constraints.</b> Chose the end-of-turn track; set and
+re-checked the envelope (CPU only, no pretrained weights, allowed libraries),
+including dropping a PyTorch dependency as unnecessary.</li>
+<li><b>Literature review.</b> Identified Voice Activity Projection (Ekstedt
+&amp; Skantze, Interspeech 2022) as the relevant prior work and required it be
+adapted under the no-weights rule — objective only, not the codebase. That is
+§7.</li>
+<li><b>Independent comparison.</b> Sourced a second implementation of the same
+task (a transformer sequence model) and required it be benchmarked under the
+same protocol. That is §8.</li>
+<li><b>Prioritisation.</b> Called the freeze — stop tuning, verify and ship —
+with time left on the clock.</li>
 </ul></td>
 <td><ul style="margin:0;padding-left:18px">
-<li>Wrote all code: DSP (framing, energy, octave-protected autocorrelation F0,
-mel filterbank, DCT cepstra, spectral statistics), the 256
-causal features, the model, the CV harness, the VAP reimplementation, the
-transformer ablation, the figures and this page.</li>
-<li>Derived the metric asymmetry in §1 from <code>score.py</code>, and designed
-duration-risk weighting, the within-turn-relative family, the elongation
-detector and the final-word slices from it.</li>
-<li>Ran the experiments and ablations, including the failures (feature
-selection, dropping short holds, VAP blending, the transformer) and logged them
-in RUNLOG.md.</li>
-<li>Flagged that the in-sample 264 ms is not a result, and produced the
-out-of-fold prediction files alongside the required ones.</li>
+<li>All code: DSP, the 256 causal features, the model, the CV
+harness, the VAP reimplementation, the transformer ablation, the figures and
+this page.</li>
+<li>The metric asymmetry in §1, and the features built from it (duration-risk
+weighting, within-turn relative, elongation, final-word slices).</li>
+<li>Experiments and ablations, failures included, logged in RUNLOG.md.</li>
+<li>Flagged the in-sample 264 ms and produced the out-of-fold prediction
+files.</li>
 </ul></td></tr>
 </table>
-<p>The division is deliberate and worth stating directly: the agent generated
-the code, and the decisions that determined whether the code was worth anything
-came from the human side — what to build (VAP, adapted not copied), what to
-measure it against (an independent implementation, same protocol), and when to
-stop. Both of the sections a reviewer is most likely to remember, §7 and §8,
-exist because of a direction the agent was given and would not have taken on its
-own; a coding assistant left unsupervised produces the feature-engineering
-pipeline in §3 and reports the 264 ms in-sample number without
-noticing anything is wrong.</p>
-<p>What is on the agent's side of the table is volume. What is on the human side
-is the reason this submission reports 1142 ms that survives a
-turn-grouped split instead of 115 ms that does not.</p>
+<p>Short version: the agent wrote the code; the direction on what to build,
+what to measure it against, and when to stop came from the human side. §7 and
+§8 both exist because of that direction.</p>
 
 <h2>11. Repo, and how to reproduce</h2>
 <pre><code>pip install numpy scipy scikit-learn pandas soundfile matplotlib pyarrow
