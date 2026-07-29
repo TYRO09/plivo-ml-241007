@@ -226,6 +226,10 @@ first change that moved Hindi at all.</p>
     the model is not merely fitting one language's prosody</td></tr>
 <tr><td>VAP zero-shot alone (no EOT labels)</td><td class="num">1412 ms</td>
     <td class="num">850 ms</td><td>§7 — implemented, honestly did not win</td></tr>
+<tr><td>causal transformer over 2 s frame matrices<br><span style="font-size:12.5px;color:#4a5568">(same idea, sequence model instead of designed features)</span></td>
+    <td class="num">1411 ms</td><td class="num">843 ms</td>
+    <td>AUC 0.543 / 0.637 held out — but <b>115 ms / 100 ms at AUC 0.996</b>
+    in-sample. See §11.</td></tr>
 <tr><td><i>shipped model on its own training folders</i></td>
     <td class="num">264 ms</td><td class="num">266 ms</td>
     <td><i>in-sample, not a result — see the warning above</i></td></tr>
@@ -294,7 +298,32 @@ NOTES.md as the top next step: semi-supervised training on those ~1,600
 unannotated silences using the full pause-level feature set instead of the
 thinner frame-level one.</p>
 
-<h2>8. Causality — how to audit it in one minute</h2>
+<h2>8. The result I would lead the discussion with</h2>
+<p>I also built the obvious "more modern" alternative: skip hand-designed
+features, feed the last 2 s straight in as a 197×17 frame matrix (energy, F0,
+voice activity, ZCR, 12 MFCCs) and let a small causal transformer (d_model 32,
+2 layers, ~20k parameters, positional encoding, causal attention mask) read the
+sequence. Pooled English+Hindi, 30 epochs, BCE loss.</p>
+<table>
+<tr><th>How it is scored</th><th class="num">English</th><th class="num">Hindi</th><th class="num">AUC</th></tr>
+<tr><td>train on all 200 turns, predict those same 200</td>
+    <td class="num">115 ms</td><td class="num">100 ms</td><td class="num">0.996 / 0.999</td></tr>
+<tr><td><b>5-fold GroupKFold by turn — unseen turns</b></td>
+    <td class="num"><b>1411 ms</b></td><td class="num"><b>843 ms</b></td>
+    <td class="num">0.543 / 0.637</td></tr>
+</table>
+<div class="warn"><b>Same code, same features, same epochs — a 12× difference in
+the reported score, and English falls to near chance (0.543).</b> The 115 ms is
+not end-of-turn detection; it is a 20k-parameter model recalling 496 training
+sequences. Anything that reads "115 ms at AUC 0.996" on 100 turns of real
+conversational audio is measuring its own training set.</div>
+<p>That is why the shipped model is gradient-boosted trees over designed
+features and not a sequence model: with 496 labelled pauses, the feature design
+<em>is</em> the regularisation. It is also why the honest numbers in §5 are the
+ones I would defend, and why I would rather submit {cv_en:.0f} ms that survives
+a turn-grouped split than 115 ms that does not.</p>
+
+<h2>9. Causality — how to audit it in one minute</h2>
 <p>The rule is that a pause's features may use only audio in
 <code>[0, pause_start)</code>. Rather than ask a reader to trust ~700 lines, the
 design funnels everything through one function:</p>
@@ -319,7 +348,7 @@ audio, and are used <b>only as training weights / training labels</b> — exactl
 like the <code>label</code> column. <code>predict.py</code> computes neither.</li>
 </ul>
 
-<h2>9. What the human did vs. what the coding agent did</h2>
+<h2>10. What the human did vs. what the coding agent did</h2>
 <p>Stated plainly, because the assignment asks and because it is checkable
 against the repo and the commit history.</p>
 <table>
@@ -356,9 +385,9 @@ code — it is the two judgement calls the agent was <em>directed</em> into and
 then executed: reading the scorer's asymmetry and letting it reshape the
 training objective, and taking a research-paper idea seriously enough to
 implement it properly, measure it honestly, and then <em>refuse to ship it</em>
-when the held-out numbers said no.</p>
+when the held-out numbers said no — the same discipline that produced §8.</p>
 
-<h2>10. Repo, and how to reproduce</h2>
+<h2>11. Repo, and how to reproduce</h2>
 <pre><code>pip install numpy scipy scikit-learn pandas soundfile matplotlib pyarrow
 
 # score every pause of an unseen folder (loads the saved model, never refits)
