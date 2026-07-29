@@ -25,11 +25,23 @@ C = {"en": "#2b6cb0", "hi": "#dd6b20", "base": "#a0aec0", "eot": "#2f855a",
      "hold": "#c53030"}
 
 
+DATA = os.path.join(ROOT, "..", "eot_handout", "eot_data")
+
+
 def load():
-    en = pd.read_parquet(os.path.join(CACHE, "feats_english.parquet"))
-    hi = pd.read_parquet(os.path.join(CACHE, "feats_hindi.parquet"))
-    en["lang"], hi["lang"] = "english", "hindi"
-    return pd.concat([en, hi], ignore_index=True).reset_index(drop=True)
+    """Cached feature tables, rebuilt from audio if the cache is absent (a
+    fresh clone has no parquet files -- they are gitignored)."""
+    out = []
+    for lang in ("english", "hindi"):
+        p = os.path.join(CACHE, f"feats_{lang}.parquet")
+        if os.path.exists(p):
+            df = pd.read_parquet(p)
+        else:
+            df = dataset.build_table(os.path.join(DATA, lang))
+            df.to_parquet(p)
+        df["lang"] = lang
+        out.append(df)
+    return pd.concat(out, ignore_index=True).reset_index(drop=True)
 
 
 def oof(both, cols, n_folds=5, cv_seeds=3, n_seeds=3):
