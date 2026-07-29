@@ -396,10 +396,10 @@ what to measure it against, and when to stop came from the human side. §7 and
 python predict.py --data_dir &lt;folder&gt; --out predictions.csv
 python score.py   --data_dir &lt;folder&gt; --pred predictions.csv
 
-python train_final.py       # retrain and re-save artifacts/model.joblib
-python src/cv.py            # honest held-out numbers + cross-language transfer
-python src/pipeline.py      # VAP vs prosodic vs blend, out of fold
-python src/gen_report.py    # out-of-fold predictions, figures, results.json</code></pre>
+python train_final.py                        # retrain, re-save artifacts/model.joblib
+python src/experiments/cv.py                 # held-out numbers + cross-language transfer
+python src/experiments/pipeline.py           # VAP vs prosodic vs blend, out of fold
+python src/experiments/gen_report.py         # out-of-fold predictions, figures, results.json</code></pre>
 <table>
 <tr><th>File</th><th>What it is</th></tr>
 <tr><td><code>predict.py</code></td><td>the deliverable entry point —
@@ -411,7 +411,7 @@ python src/gen_report.py    # out-of-fold predictions, figures, results.json</co
 scratch</td></tr>
 <tr><td><code>src/model.py</code></td><td>the blend + duration-risk weights</td></tr>
 <tr><td><code>src/vap.py</code>, <code>src/vap_train.py</code></td>
-<td>the VAP reimplementation (§7)</td></tr>
+<td>the VAP reimplementation (§7) — measured, not shipped</td></tr>
 <tr><td><code>src/metric.py</code></td><td><code>score.py</code>'s sweep,
 in-process, for model selection</td></tr>
 <tr><td><code>predictions_{{english,hindi}}.csv</code></td><td>required
