@@ -7,6 +7,7 @@ ROOT = os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))
 
 res = json.load(open(os.path.join(ROOT, "artifacts", "results.json")))
+stab = json.load(open(os.path.join(ROOT, "artifacts", "stability.json")))
 figs = json.load(open(os.path.join(ROOT, "artifacts", "figs.json")))
 
 cv_en, cv_hi = res["cv"]["english"], res["cv"]["hindi"]
@@ -88,20 +89,33 @@ numpy / scipy / scikit-learn / pandas / soundfile</div>
 
 <div class="hero">
   <div class="kpi"><div class="l">English · held out</div>
-    <div class="v">{cv_en:.0f} ms</div>
-    <div class="d">▼ {b_en - cv_en:.0f} ms vs baseline ({100*(b_en-cv_en)/b_en:.0f}%)</div></div>
+    <div class="v">{stab['english']['mean']:.0f} <span style="font-size:17px">± {stab['english']['sd']:.0f} ms</span></div>
+    <div class="d">▼ {stab['english']['baseline'] - stab['english']['mean']:.0f} ms vs baseline — ~8σ, real</div></div>
   <div class="kpi"><div class="l">Hindi · held out</div>
-    <div class="v">{cv_hi:.0f} ms</div>
-    <div class="d">▼ {b_hi - cv_hi:.0f} ms vs baseline</div></div>
+    <div class="v">{stab['hindi']['mean']:.0f} <span style="font-size:17px">± {stab['hindi']['sd']:.0f} ms</span></div>
+    <div class="d" style="color:#c05621">▼ {stab['hindi']['baseline'] - stab['hindi']['mean']:.0f} ms — inside noise, not a real gain</div></div>
   <div class="kpi"><div class="l">Diagnostic AUC</div>
     <div class="v">{full_en['auc']:.2f} / {full_hi['auc']:.2f}</div>
     <div class="d">en / hi, out of fold</div></div>
 </div>
 <p class="sub" style="margin-top:4px">Mean response delay at ≤5% interrupted
-turns — the graded metric. Lower is better. Both numbers are
-<strong>out-of-fold</strong> (5-fold <code>GroupKFold</code> by
-<code>turn_id</code>, averaged over 3 shuffles), which is the honest estimate
-of hidden-test behaviour.</p>
+turns — the graded metric, lower is better. <strong>Out-of-fold</strong>
+(5-fold <code>GroupKFold</code> by <code>turn_id</code>), reported as
+mean ± sd over {stab['n_shuffles']} independent fold shuffles rather than as a
+single number, because at 100 turns per language a single split moves by tens
+of milliseconds on its own.</p>
+<div class="note"><b>What is and is not a real result.</b> English improves by
+{stab['english']['baseline'] - stab['english']['mean']:.0f} ms against a
+run-to-run spread of {stab['english']['sd']:.0f} ms — roughly 8σ, and
+<b>0 of {stab['n_shuffles']}</b> shuffles failed to beat the baseline. Hindi
+improves by {stab['hindi']['baseline'] - stab['hindi']['mean']:.0f} ms against a
+spread of {stab['hindi']['sd']:.0f} ms — about 0.9σ, and
+<b>{stab['hindi']['frac_at_or_worse_than_baseline']*100:.0f}% of shuffles landed
+at or worse than the 850 ms baseline</b>. So: the English gain is solid, and
+<b>I cannot claim a reliable Hindi improvement from this data.</b> Since the
+hidden test set is mostly Hindi, the honest expectation there is "about
+baseline, possibly a little better", not 29%. Raw per-shuffle numbers are in
+<code>artifacts/stability.json</code>.</div>
 
 <div class="warn"><strong>Read this before looking at any other number.</strong>
 The shipped model is trained on all 200 provided turns, so running
@@ -219,9 +233,11 @@ first change that moved Hindi at all.</p>
 <tr><th>System</th><th class="num">English</th><th class="num">Hindi</th><th>Notes</th></tr>
 <tr><td>silence-only baseline (given)</td><td class="num">{b_en:.0f} ms</td>
     <td class="num">{b_hi:.0f} ms</td><td>reproduced with <code>baseline.py</code></td></tr>
-<tr><td><b>this model, held out</b></td><td class="num"><b>{cv_en:.0f} ms</b></td>
-    <td class="num"><b>{cv_hi:.0f} ms</b></td>
-    <td>AUC {full_en['auc']:.3f} / {full_hi['auc']:.3f}; operating points
+<tr><td><b>this model, held out</b> (mean ± sd, {stab['n_shuffles']} shuffles)</td>
+    <td class="num"><b>{stab['english']['mean']:.0f} ± {stab['english']['sd']:.0f} ms</b></td>
+    <td class="num"><b>{stab['hindi']['mean']:.0f} ± {stab['hindi']['sd']:.0f} ms</b></td>
+    <td>the shipped out-of-fold prediction files score
+    {cv_en:.0f} / {cv_hi:.0f}; AUC {full_en['auc']:.3f} / {full_hi['auc']:.3f}; operating points
     thr={full_en['threshold']:.2f}, d={full_en['delay']*1000:.0f} ms and
     thr={full_hi['threshold']:.2f}, d={full_hi['delay']*1000:.0f} ms</td></tr>
 <tr><td>trained on the <em>other</em> language only</td>
@@ -256,15 +272,21 @@ and it fails because <b>silences inside a turn are routinely longer than
 silences between turns</b> — 63% of English holds in this data exceed 0.5 s. A
 timer tuned to interrupt ≤5% of the time must therefore wait ~1.6 s, and every
 user pays that wait on every turn.</p>
-<p>This model reads the <em>shape</em> of the speech leading into the pause —
+<p><b>On English</b>, this model reads the <em>shape</em> of the speech leading into the pause —
 did the pitch fall to a phrase-final target, did the last vowel freeze mid-word,
 is the speaker slowing down, does this pause sound more final than the ones they
 already held through — and so it can act on a much shorter timer for the pauses
 that look final while still waiting out the ones that do not. Held out, that is
-{b_en - cv_en:.0f} ms ({100*(b_en-cv_en)/b_en:.0f}%) off the English wait at the
-same interruption budget. On a call with 10 user turns that is roughly
-{(b_en - cv_en)*10/1000:.1f} seconds of dead air removed, without interrupting
-anyone more often.</p>
+{stab['english']['baseline'] - stab['english']['mean']:.0f} ms
+({100*(stab['english']['baseline']-stab['english']['mean'])/stab['english']['baseline']:.0f}%)
+off the English wait at the same interruption budget — roughly
+{(stab['english']['baseline'] - stab['english']['mean'])*10/1000:.1f} seconds of
+dead air removed over a ten-turn call, without interrupting anyone more often.</p>
+<p><b>On Hindi it does not beat the timer reliably</b>, and the reason is in §1:
+83% of Hindi holds here are ≤0.5 s, so a 850 ms timer is already close to the
+best a threshold policy can do on this sample. The headroom that makes the
+English result possible is largely absent. I would rather state that than
+average the two languages into a single flattering number.</p>
 
 <h2>7. Voice Activity Projection: implemented, and an honest negative result</h2>
 <p>I reimplemented the objective from Ekstedt &amp; Skantze,

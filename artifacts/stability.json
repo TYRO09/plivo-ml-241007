@@ -1,0 +1,44 @@
+{
+  "n_shuffles": 8,
+  "folds": 5,
+  "english": {
+    "mean": 1184.4,
+    "sd": 49.1,
+    "min": 1112.5,
+    "max": 1250.0,
+    "baseline": 1600.0,
+    "runs": [
+      1112.5,
+      1180.0,
+      1160.0,
+      1204.0,
+      1250.0,
+      1138.5,
+      1250.0,
+      1180.0
+    ],
+    "frac_at_or_worse_than_baseline": 0.0
+  },
+  "hindi": {
+    "mean": 835.1,
+    "sd": 16.2,
+    "min": 809.5,
+    "max": 857.5,
+    "baseline": 850.0,
+    "runs": [
+      826.0,
+      809.5,
+      850.0,
+      826.5,
+      850.0,
+      826.0,
+      835.0,
+      857.5
+    ],
+    "frac_at_or_worse_than_baseline": 0.38
+  },
+  "committed_oof": {
+    "english": 1142.5,
+    "hindi": 835.0
+  }
+}

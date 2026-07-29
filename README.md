@@ -9,10 +9,14 @@ from before the pause.
 | | English | Hindi |
 |---|---|---|
 | silence-only baseline (given) | 1600 ms | 850 ms |
-| **this model** | **1142 ms** | **835 ms** |
+| **this model** (mean ± sd, 8 shuffles) | **1184 ± 49 ms** | **835 ± 16 ms** |
+| is the gain real? | **yes — ~8σ, 8/8 shuffles beat baseline** | **no — 0.9σ, 3/8 shuffles no better than baseline** |
 
 Metric: mean response delay at ≤5% interrupted turns, from the official
-`score.py`. Lower is better.
+`score.py`. Lower is better. The English gain is solid; **the Hindi gain is
+inside run-to-run noise and I do not claim it.** The hidden set is mostly Hindi,
+so expect roughly baseline there. Per-shuffle numbers:
+`artifacts/stability.json`.
 
 > **On the two provided folders the shipped model reports 264 ms / 266 ms.**
 > That is **in-sample** — those 200 turns are its training data — and it is not

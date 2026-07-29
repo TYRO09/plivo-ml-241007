@@ -18,9 +18,14 @@ It still fails on list-like turns where the speaker pauses after each item with
 fully final prosody ("…two pizzas, …one garlic bread, …"); those produce most of
 the false cutoffs. It also fails when a turn ends on a rising or level contour
 (confirmation questions), and on first pauses with under a second of speech
-context. English is much harder than Hindi here (1218 ms vs 858 ms held out)
-because 63% of English holds exceed 0.5 s, which removes the cheap operating
-points the scorer would otherwise find.
+context. Held out over 8 fold shuffles the model reaches 1184 ± 49 ms on English
+(baseline 1600, ~8σ) but only 835 ± 16 ms on Hindi (baseline 850) — a gain of
+0.9σ, with 38% of shuffles no better than the baseline, so **I cannot claim a
+reliable Hindi improvement from 100 turns**. The reason is structural: 83% of
+Hindi holds here are ≤0.5 s, so a plain 850 ms timer is already near the best a
+threshold policy can do, whereas 63% of English holds exceed 0.5 s and leave
+real headroom. Since the hidden set is mostly Hindi, expect roughly baseline
+there.
 
 I reimplemented the Voice Activity Projection objective (Ekstedt & Skantze
 2022) from scratch and it did **not** beat supervised prosody out of fold,

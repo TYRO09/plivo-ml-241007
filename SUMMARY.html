@@ -65,20 +65,33 @@ numpy / scipy / scikit-learn / pandas / soundfile</div>
 
 <div class="hero">
   <div class="kpi"><div class="l">English · held out</div>
-    <div class="v">1142 ms</div>
-    <div class="d">▼ 458 ms vs baseline (29%)</div></div>
+    <div class="v">1184 <span style="font-size:17px">± 49 ms</span></div>
+    <div class="d">▼ 416 ms vs baseline — ~8σ, real</div></div>
   <div class="kpi"><div class="l">Hindi · held out</div>
-    <div class="v">835 ms</div>
-    <div class="d">▼ 15 ms vs baseline</div></div>
+    <div class="v">835 <span style="font-size:17px">± 16 ms</span></div>
+    <div class="d" style="color:#c05621">▼ 15 ms — inside noise, not a real gain</div></div>
   <div class="kpi"><div class="l">Diagnostic AUC</div>
     <div class="v">0.70 / 0.76</div>
     <div class="d">en / hi, out of fold</div></div>
 </div>
 <p class="sub" style="margin-top:4px">Mean response delay at ≤5% interrupted
-turns — the graded metric. Lower is better. Both numbers are
-<strong>out-of-fold</strong> (5-fold <code>GroupKFold</code> by
-<code>turn_id</code>, averaged over 3 shuffles), which is the honest estimate
-of hidden-test behaviour.</p>
+turns — the graded metric, lower is better. <strong>Out-of-fold</strong>
+(5-fold <code>GroupKFold</code> by <code>turn_id</code>), reported as
+mean ± sd over 8 independent fold shuffles rather than as a
+single number, because at 100 turns per language a single split moves by tens
+of milliseconds on its own.</p>
+<div class="note"><b>What is and is not a real result.</b> English improves by
+416 ms against a
+run-to-run spread of 49 ms — roughly 8σ, and
+<b>0 of 8</b> shuffles failed to beat the baseline. Hindi
+improves by 15 ms against a
+spread of 16 ms — about 0.9σ, and
+<b>38% of shuffles landed
+at or worse than the 850 ms baseline</b>. So: the English gain is solid, and
+<b>I cannot claim a reliable Hindi improvement from this data.</b> Since the
+hidden test set is mostly Hindi, the honest expectation there is "about
+baseline, possibly a little better", not 29%. Raw per-shuffle numbers are in
+<code>artifacts/stability.json</code>.</div>
 
 <div class="warn"><strong>Read this before looking at any other number.</strong>
 The shipped model is trained on all 200 provided turns, so running
@@ -196,9 +209,11 @@ first change that moved Hindi at all.</p>
 <tr><th>System</th><th class="num">English</th><th class="num">Hindi</th><th>Notes</th></tr>
 <tr><td>silence-only baseline (given)</td><td class="num">1600 ms</td>
     <td class="num">850 ms</td><td>reproduced with <code>baseline.py</code></td></tr>
-<tr><td><b>this model, held out</b></td><td class="num"><b>1142 ms</b></td>
-    <td class="num"><b>835 ms</b></td>
-    <td>AUC 0.697 / 0.765; operating points
+<tr><td><b>this model, held out</b> (mean ± sd, 8 shuffles)</td>
+    <td class="num"><b>1184 ± 49 ms</b></td>
+    <td class="num"><b>835 ± 16 ms</b></td>
+    <td>the shipped out-of-fold prediction files score
+    1142 / 835; AUC 0.697 / 0.765; operating points
     thr=0.50, d=850 ms and
     thr=0.45, d=700 ms</td></tr>
 <tr><td>trained on the <em>other</em> language only</td>
@@ -233,15 +248,21 @@ and it fails because <b>silences inside a turn are routinely longer than
 silences between turns</b> — 63% of English holds in this data exceed 0.5 s. A
 timer tuned to interrupt ≤5% of the time must therefore wait ~1.6 s, and every
 user pays that wait on every turn.</p>
-<p>This model reads the <em>shape</em> of the speech leading into the pause —
+<p><b>On English</b>, this model reads the <em>shape</em> of the speech leading into the pause —
 did the pitch fall to a phrase-final target, did the last vowel freeze mid-word,
 is the speaker slowing down, does this pause sound more final than the ones they
 already held through — and so it can act on a much shorter timer for the pauses
 that look final while still waiting out the ones that do not. Held out, that is
-458 ms (29%) off the English wait at the
-same interruption budget. On a call with 10 user turns that is roughly
-4.6 seconds of dead air removed, without interrupting
-anyone more often.</p>
+416 ms
+(26%)
+off the English wait at the same interruption budget — roughly
+4.2 seconds of
+dead air removed over a ten-turn call, without interrupting anyone more often.</p>
+<p><b>On Hindi it does not beat the timer reliably</b>, and the reason is in §1:
+83% of Hindi holds here are ≤0.5 s, so a 850 ms timer is already close to the
+best a threshold policy can do on this sample. The headroom that makes the
+English result possible is largely absent. I would rather state that than
+average the two languages into a single flattering number.</p>
 
 <h2>7. Voice Activity Projection: implemented, and an honest negative result</h2>
 <p>I reimplemented the objective from Ekstedt &amp; Skantze,
