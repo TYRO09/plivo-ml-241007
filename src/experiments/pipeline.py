@@ -13,15 +13,16 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupKFold
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(SRC)
+sys.path.insert(0, SRC)
 import dataset
 import metric
 import vap_train
 from model import BlendModel, risk_weights
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, "..", "..", "eot_handout", "eot_data")
-CACHE = os.path.join(HERE, "..", "artifacts")
+DATA = os.path.join(REPO, "..", "eot_handout", "eot_data")
+CACHE = os.path.join(REPO, "artifacts")
 VAP_KEYS = ["vap_p_eot", "vap_p_quiet_600", "vap_p_quiet_1200",
             "vap_p_resume_fast", "vap_expected_bin", "vap_logit_eot"]
 

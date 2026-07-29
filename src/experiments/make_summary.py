@@ -2,8 +2,10 @@
 import json
 import os
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.join(HERE, "..")
+# src/experiments/make_summary.py -> src/experiments -> src -> repo root
+ROOT = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))
+
 res = json.load(open(os.path.join(ROOT, "artifacts", "results.json")))
 figs = json.load(open(os.path.join(ROOT, "artifacts", "figs.json")))
 

@@ -12,20 +12,21 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupKFold
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(SRC)
+sys.path.insert(0, SRC)
 import dataset
 import metric
 from model import BlendModel, risk_weights
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.join(HERE, "..")
-CACHE = os.path.join(ROOT, "artifacts")
-FIGS = os.path.join(ROOT, "figs")
+ROOT = REPO
+CACHE = os.path.join(REPO, "artifacts")
+FIGS = os.path.join(REPO, "figs")
 C = {"en": "#2b6cb0", "hi": "#dd6b20", "base": "#a0aec0", "eot": "#2f855a",
      "hold": "#c53030"}
 
 
-DATA = os.path.join(ROOT, "..", "eot_handout", "eot_data")
+DATA = os.path.join(REPO, "..", "eot_handout", "eot_data")
 
 
 def load():

@@ -44,19 +44,46 @@ is not required and is never read by the model.
 | `RUNLOG.md` | every scoring run, what changed, why |
 | `NOTES.md` | signals used, failure modes, next steps |
 
-## Code
+## Layout
 
-| | |
-|---|---|
-| `src/dsp.py` | all signal processing, written from scratch: framing, energy, octave-protected autocorrelation F0, mel filterbank, DCT cepstra, spectral statistics |
-| `src/features_eot.py` | the 256 causal features. `causal_slice()` is the single point where audio enters — it returns `x[:int(pause_start*sr)]`, so no feature can see the future |
-| `src/dataset.py` | feature table + within-turn relative features |
-| `src/model.py` | HistGradientBoosting ×5 seeds ⊕ L2 logistic, rank-averaged; duration-risk sample weights |
-| `src/metric.py` | `score.py`'s policy sweep in-process, for model selection on the real metric |
-| `src/cv.py`, `src/exp.py` | held-out evaluation and the ablations in `RUNLOG.md` |
-| `src/vap.py`, `src/vap_train.py` | Voice Activity Projection objective (Ekstedt & Skantze 2022) reimplemented from scratch — measured, documented, **not shipped**; see §7 of `SUMMARY.html` |
-| `src/gen_report.py`, `src/make_summary.py` | regenerate every figure and number |
-| `train_final.py` | retrain and save `artifacts/model.joblib` |
+```
+plivo-ml-241007/
+├── SUMMARY.html               # the write-up: solution, results, graphs  [deliverable 1]
+├── predict.py                 # --data_dir / --out, loads the saved model [deliverable 2]
+├── predictions_english.csv    # scored with the shipped model             [deliverable 3]
+├── predictions_hindi.csv      #   "
+├── predictions_*_heldout.csv  # the same pauses scored OUT OF FOLD (honest)
+├── RUNLOG.md                  # every scoring run, what changed, why      [deliverable 4]
+├── NOTES.md                   # signals, failure modes, next steps        [deliverable 5]
+├── README.md                  # this file
+├── requirements.txt
+├── score.py                   # the official scorer, unmodified
+├── train_final.py             # refit on all data, save artifacts/model.joblib
+├── artifacts/
+│   ├── model.joblib           # what predict.py loads
+│   ├── results.json           # every number in SUMMARY.html
+│   ├── figs.json              # the embedded figures
+│   └── train_meta.json
+└── src/
+    ├── README.md              # code map — start here
+    ├── dsp.py                 # signal processing, from scratch
+    ├── features_eot.py        # the 256 causal features; causal_slice() is the audit point
+    ├── dataset.py             # pause table + within-turn relative features
+    ├── model.py               # the blend + duration-risk weights
+    ├── metric.py              # score.py's sweep, in-process, for model selection
+    ├── vap.py, vap_train.py   # VAP objective, from scratch — measured, NOT shipped
+    └── experiments/           # how the model was chosen; not needed to run it
+        ├── cv.py              # held-out evaluation + cross-language transfer
+        ├── exp.py             # the ablations in RUNLOG rows 6-7
+        ├── pipeline.py        # VAP vs prosodic vs blend (RUNLOG rows 8-10)
+        ├── gen_report.py      # out-of-fold predictions, figures, results.json
+        └── make_summary.py    # builds SUMMARY.html from results.json
+```
+
+`src/` is what inference needs; `src/experiments/` is what chose the model. See
+[src/README.md](src/README.md) for what each file does and the order to read
+them in. `SUMMARY.html` is generated from measured results, never hand-edited,
+so its numbers cannot drift.
 
 ## Rules compliance
 
